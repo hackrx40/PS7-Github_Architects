@@ -39,4 +39,5 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('change_password/', views.change_password_view, name='change_password'),
     path('analysis/',views.analysis,name='analysis'),
+    path('competitors/', views.competitorAnalysis, name="competitors"),
 ]
