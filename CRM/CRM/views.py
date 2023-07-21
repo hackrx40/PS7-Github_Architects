@@ -17,17 +17,17 @@ from django.http import JsonResponse
 import requests
 import json
 from time import sleep
-from accounts.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
+from authentication.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
 from .serializers import InstagramProfileSerializer
-from leads.models import Post
+from leadGeneration.models import Post
 from django.shortcuts import render
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import warnings
-from leads.models import Lead
-from accounts.models import Employee
+from leadGeneration.models import Lead
+from authentication.models import Employee
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.db.models import Count, Q
@@ -414,7 +414,7 @@ def get_subreddit_data(request):
             })
 
     return Response(response_data)
-from leads.models import Tweet
+from leadGeneration.models import Tweet
 # @csrf_exempt
 # def delete_duplicates(request):
 #     if request.method=='GET':
@@ -446,6 +446,48 @@ from leads.models import Tweet
 #                 lead_obj = Lead.objects.create(username=username, location=location, status='new', handled_by=handled_by)
 #                 lead_obj.save()
 #         return JsonResponse("Data saved succesfully", safe=False)
+
+# @csrf_exempt
+# @require_POST
+# def get_tweets(request):
+#     data = json.loads(request.body.decode('utf-8'))
+#     keyword = data.get('keyword', '')
+#     count = data.get('count', '20')  # Default count is set to 20 if not provided
+#     until = data.get('until')  # Optional parameter 'until' for the date filter
+#     print(keyword, count, until)
+    
+#     url = "https://twitter135.p.rapidapi.com/v1.1/SearchTweets/"
+
+#     querystring = {"q": keyword, "count": count}
+    
+#     if until:
+#         querystring['until'] = until
+
+#     headers = {
+#         'X-RapidAPI-Key': 'b6e219c59fmsh7bc8c7d3a548169p16351bjsnb91d80f04ecf',
+#         'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
+#     }
+
+#     response = requests.get(url, headers=headers, params=querystring)
+#     data = response.json()
+    
+#     tweets = []
+#     for status in data.get('statuses', []):
+#         tweet = {
+#             'created_at': status.get('created_at', ''),
+#             'full_text': status.get('full_text', ''),
+#             'user': {
+#                 'name': status['user'].get('name', ''),
+#                 'screen_name': status['user'].get('screen_name', ''),
+#                 'location': status['user'].get('location', ''),
+#                 'followers_count': status['user'].get('followers_count', 0),
+#                 'friends_count': status['user'].get('friends_count', 0),
+#             },
+#             'lang': status.get('lang', ''),
+#         }
+#         tweets.append(tweet)
+
+#     return JsonResponse({'tweets': tweets})
 
 @csrf_exempt
 def get_tweets(request):
@@ -588,7 +630,7 @@ def convert_dict_to_csv(data_dict):
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from leads.models import FacebookPost
+from leadGeneration.models import FacebookPost
 from facebook_scraper import get_posts
 
 @csrf_exempt
@@ -1158,7 +1200,7 @@ def generateDataForInsta(request):
         
         }
     return render(request, "generateDataForInsta.html",context=context)
-from leads.models import Lead
+from leadGeneration.models import Lead
 def dataVisualization(request):
     if request.method=="POST":
         service=request.POST.get('service')
