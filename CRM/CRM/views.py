@@ -1200,7 +1200,9 @@ def generateDataForInsta(request):
         
         }
     return render(request, "generateDataForInsta.html",context=context)
+
 from leadGeneration.models import Lead
+
 def dataVisualization(request):
     if request.method=="POST":
         service=request.POST.get('service')
@@ -1227,22 +1229,6 @@ def dataVisualization(request):
         "user_type":employee.position
         }
     return render(request, "dataVisualization.html",context=context)
-
-def crmConnect(request):
-    current_user = request.user
-    employee = Employee.objects.get(email=current_user)
-    context={
-        "username":current_user,
-        "user_type":employee.position}
-    return render(request, "connect.html",context=context)
-
-def crmMessage(request):
-    current_user = request.user
-    employee = Employee.objects.get(email=current_user)
-    context={
-        "username":current_user,
-        "user_type":employee.position}
-    return render(request, "message.html",context=context)
 
 def sales_analytics(request):
     current_user = request.user
