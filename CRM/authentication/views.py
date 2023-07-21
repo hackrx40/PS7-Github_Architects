@@ -1,12 +1,12 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Employee, Manager,Team
-from .models import Request
+from .models import Employee, Manager,Team, Request
 from .serializers import RequestSerializer
-from django.shortcuts import render
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate, login as auth_login
+from django.views.decorators.csrf import csrf_exempt
 
 @api_view(['POST'])
 def manager_signup(request):
@@ -106,9 +106,6 @@ def create_employee(request):
         return redirect('login')  # Replace 'login' with the URL name of your login view
     else:
         return render(request, 'signup.html')  # Replace 'signup.html' with the appropriate template name
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth import authenticate, login as auth_login
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def login(request):
