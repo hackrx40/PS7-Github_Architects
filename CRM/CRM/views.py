@@ -9,7 +9,29 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from django.views.decorators.http import require_GET
-
+import csv
+import json
+import os
+import pickle
+from django.http import JsonResponse
+import requests
+import json
+from time import sleep
+from accounts.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
+from .serializers import InstagramProfileSerializer
+from leads.models import Post
+from django.shortcuts import render
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pickle as pkl
+import warnings
+from leads.models import Lead
+from accounts.models import Employee
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.db.models import Count, Q
+from django.conf import settings
 
 @api_view(['POST'])
 def get_instagram_profile(request):
@@ -222,13 +244,6 @@ def convert_dict_to_csv(data_dict):
     # Return the temporary file path
     return temp_file_path
 
-
-import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from leads.models import FacebookPost
-from facebook_scraper import get_posts
-
 @csrf_exempt
 def scrape_facebook_page(request):
     if request.method == 'POST':
@@ -337,3 +352,16 @@ def save_posts(request):
         return JsonResponse({'message': 'Posts saved successfully.'})
 
     return JsonResponse({'error': 'Invalid request method.'})
+
+def approve_employee_view(request):
+    if request.method == 'POST':
+        employee_id = request.POST.get('employee_id')
+        try:
+            employee = Employee.objects.get(id=employee_id)
+            employee.is_approved = True
+            employee.save()
+            return redirect('dashboard')
+        except Employee.DoesNotExist:
+            return HttpResponse('Employee not found')
+    else:
+        return HttpResponse('Invalid request method')
