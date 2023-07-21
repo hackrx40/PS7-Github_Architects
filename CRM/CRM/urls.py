@@ -33,4 +33,9 @@ urlpatterns = [
     path('generateDataFromInsta/', views.generateDataForInsta, name='generateDataFromInsta'),
     path('generateLeads/', views.generateLeads, name='generateLeads'),
     path('dataVisualization/', views.dataVisualization, name='dataVisualization'),
+    path('sales-analysis',views.sales_analytics,name='sales-analytics'),
+    path('approve_employee/', views.approve_employee_view, name='approve_employee'),
+    path('todo/', views.todo, name='todo'),
+    path('settings/', views.settings, name='settings'),
+    path('change_password/', views.change_password_view, name='change_password'),
 ]

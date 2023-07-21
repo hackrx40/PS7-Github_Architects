@@ -1124,3 +1124,40 @@ def sales_analytics(request):
         "stats":status_chart
     }
     return render(request, "sales_anaylsis.html",context=context)
+
+def todo(request):
+    return render(request, "todo.html")
+
+def settings(request):
+    current_user = request.user
+    employee = Employee.objects.get(email=current_user)
+    context={
+        "username":current_user,
+        "user_type":employee.position
+        }
+
+    return render(request, "settings.html",context=context)
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_new_password = request.POST.get('confirm_new_password')
+
+
+        if not request.user.check_password(current_password):
+            return render(request, 'change_password.html', {'error': 'Current password is incorrect.'})
+
+        if new_password != confirm_new_password:
+            return render(request, 'change_password.html', {'error': 'New password and confirm new password do not match.'})
+
+        request.user.set_password(new_password)
+        request.user.save()
+
+
+        return redirect('settings')
+
+    return render(request, 'settings.html')
