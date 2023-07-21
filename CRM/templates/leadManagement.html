@@ -36,10 +36,10 @@ Generate Leads | CRM
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="selectData">Data</label>
-                        <select class="form-control form-control-lg" id="selectData">
-                            <option value="past" >Past Data</option>
-                            <option value="current" >Real Time</option>
+                        <label for="selectMedia">Social Media</label>
+                        <select class="form-control form-control-lg" id="selectMedia">
+                            <option value="twitter" >Twitter</option>
+                            <option value="instagram" >Instagram</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -70,15 +70,15 @@ Generate Leads | CRM
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="selectData">Data</label>
-                        <select class="form-control form-control-lg" id="selectData">
-                            <option value="past" >Past Data</option>
-                            <option value="current" >Real Time</option>
+                        <label for="selectMedia">Social Media</label>
+                        <select class="form-control form-control-lg" id="selectMedia">
+                            <option value="twitter" >Twitter</option>
+                            <option value="instagram" >Instagram</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="hashtagHolder">Hashtag</label>
-                        <input type="text" class="form-control form-control-lg" id="hashtagHolder" placeholder="Enter a hashtag without #">
+                        <label for="dateUntil">Date until</label>
+                        <input type="date" class="form-control form-control-lg" id="dateUntil" placeholder="Date upto which leads should be generated">
                     </div>
                     <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
                     <a href="{% url 'dashboard' %}" class="btn btn-light">Cancel</a>
