@@ -33,6 +33,12 @@ from django.shortcuts import redirect
 from django.db.models import Count, Q
 import os
 from pathlib import Path
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from leadGeneration.models import FacebookPost
+from facebook_scraper import get_posts
+from leadGeneration.models import Tweet
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -86,59 +92,6 @@ def test(request):
     else:
         return JsonResponse({'error': response.text}, status=500)
 
-
-# @api_view(['POST'])
-# def get_instagram_profile(request):
-#     username = request.data.get('username', '')
-#     if not username:
-#         return JsonResponse({'error': 'Username parameter is missing.'}, status=400)
-#     conn = http.client.HTTPSConnection("scraper-api.smartproxy.com")
-#     payload = {
-#         "target": "instagram_graphql_profile",
-#         "url": f"https://www.instagram.com/{username}/",
-#         "locale": "en",
-#         "geo": "India"
-#     }
-#     headers = {
-#         'Accept': 'application/json',
-#         'Authorization': 'Basic UzAwMDAxMTExMjE6UCRXMTM5YThjMmQwNTM2NTg2MmI5ZTk0Y2IzZjM3NzAzMzJj',
-#         'Content-Type': 'application/json'
-#     }
-#     payload_str = json.dumps(payload)
-#     conn.request("POST", "/v1/scrape", payload_str, headers)
-#     res = conn.getresponse()
-#     data = res.read()
-#     response = json.loads(data.decode("utf-8"))
-#     # print(response)
-    
-#     content = response.get('data', {}).get('content', {})
-#     user = content.get('user', {})
-    
-#     # Extracting the required information
-#     username = user.get('username')
-#     is_verified = user.get('is_verified')
-#     followers_count = user.get('edge_followed_by', {}).get('count')
-#     following_count = user.get('edge_follow', {}).get('count')
-#     biography = user.get('biography')
-    
-#     posts = []
-#     edges = user.get('edge_felix_video_timeline', {}).get('edges', [])
-#     for edge in edges:
-#         node = edge.get('node', {})
-#         shortcode = node.get('shortcode')
-#         post_url = f'https://www.instagram.com/p/{shortcode}/'
-#         posts.append(post_url)
-    
-#     result = {
-#         'username': username,
-#         'verified': is_verified,
-#         'followers': followers_count,
-#         'following': following_count,
-#         'biography': biography,
-#         'post_urls': posts
-#     }
-
-#     return Response(result)
 @api_view(['POST'])
 def get_instagram_profile(request):
     username = request.data.get('username', '')
@@ -201,40 +154,6 @@ def get_instagram_profile(request):
         # Serialize the saved data
         serialized_data = InstagramProfileSerializer(profile).data
         return Response(serialized_data)
-
-
-# @csrf_exempt
-# @require_POST
-# def get_instagram_stats(request):
-#     payload = json.loads(request.body)
-#     post_links = payload.get('post_links', [])
-
-#     result = []
-#     for link in post_links:
-#         conn = http.client.HTTPSConnection("scraper-api.smartproxy.com")
-#         payload = json.dumps({
-#             "target": "instagram_post",
-#             "url": link,
-#             "locale": "en",
-#             "geo": "India"
-#         })
-#         headers = {
-#             'Accept': 'application/json',
-#             'Authorization': 'Basic UzAwMDAxMTExMjE6UCRXMTM5YThjMmQwNTM2NTg2MmI5ZTk0Y2IzZjM3NzAzMzJj',
-#             'Content-Type': 'application/json'
-#         }
-#         conn.request("POST", "/v1/scrape", payload, headers)
-#         res = conn.getresponse()
-#         data = res.read().decode("utf-8")
-#         response = json.loads(data)
-        
-#         # Extract the required information from the response
-#         comments = response['data']['content']['comments']
-#         extracted_info = [{'username': comment['username'], 'likes': comment['likes'], 'replies': comment['replies'], 'comment': comment['comment']} for comment in comments]
-        
-#         result.append({'post_link': link, 'comments': extracted_info})
-    
-#     return JsonResponse(result, safe=False)
 
 @api_view(['POST'])
 def get_instagram_stats(request):
@@ -412,38 +331,6 @@ def get_subreddit_data(request):
             })
 
     return Response(response_data)
-from leadGeneration.models import Tweet
-# @csrf_exempt
-# def delete_duplicates(request):
-#     if request.method=='GET':
-#         stored_tweets = Tweet.objects.all().values()
-#         df = pd.DataFrame.from_records(stored_tweets)
-#         intent=pkl.load(open("model/intent_classification.pkl","rb"))
-#         intent_tfidf=pkl.load(open("model/intent_classification_tfidf.pkl","rb"))
-#         def predict_intent(s):
-#             s=[s]
-#             d=intent.predict(intent_tfidf.transform(s))
-#             if d[0][0] == 1:
-#                 return "enquiry"
-#             elif d[0][1] == 1:
-#                 return "general talk"
-#             else:
-#                 return "complaint"
-#         df["intent"] = df["full_text"].apply(predict_intent)
-#         value_counts = df["intent"].value_counts()
-#         leads = []
-#         for index, row in df.iterrows():
-#             print(row['intent'])
-#             if row['intent'] == 'enquiry':
-#                 leads.append((row['screen_name'], row['location']))
-#         for lead in leads:
-#             username = lead[0]
-#             location = lead[1]
-#             handled_by = None  # Replace 'Your Employee Name' with the appropriate employee name or query
-#             if not Lead.objects.filter(username=username).exists():
-#                 lead_obj = Lead.objects.create(username=username, location=location, status='new', handled_by=handled_by)
-#                 lead_obj.save()
-#         return JsonResponse("Data saved succesfully", safe=False)
 
 @csrf_exempt
 def get_tweets(request):
@@ -560,6 +447,51 @@ def get_tweets(request):
         stored_tweets = Tweet.objects.all().values()
         return JsonResponse({'stored_tweets': list(stored_tweets)})
 
+# @csrf_exempt
+# @require_POST
+# def get_tweets(request):
+#     data = json.loads(request.body.decode('utf-8'))
+#     keyword = data.get('keyword', '')
+#     count = data.get('count', '20')  # Default count is set to 20 if not provided
+#     until = data.get('until')  # Optional parameter 'until' for the date filter
+#     print(keyword, count, until)
+    
+#     url = "https://twitter135.p.rapidapi.com/v1.1/SearchTweets/"
+
+#     querystring = {"q": keyword, "count": count}
+    
+#     if until:
+#         querystring['until'] = until
+
+#     headers = {
+#         # 'X-RapidAPI-Key': 'cc8d44e175mshcaabe692fb45fc0p104c66jsn0762ffe8c38b',
+#         # 'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
+#         'X-RapidAPI-Key': 'd44b792600msh7b88ddb66d5d54fp1f9d61jsn5d1db7832743',
+#         'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
+#     }
+
+#     response = requests.get(url, headers=headers, params=querystring)
+#     data = response.json()
+#     print(data)
+    
+#     tweets = []
+#     for status in data.get('statuses', []):
+#         tweet = {
+#             'created_at': status.get('created_at', ''),
+#             'full_text': status.get('full_text', ''),
+#             'user': {
+#                 'name': status['user'].get('name', ''),
+#                 'screen_name': status['user'].get('screen_name', ''),
+#                 'location': status['user'].get('location', ''),
+#                 'followers_count': status['user'].get('followers_count', 0),
+#                 'friends_count': status['user'].get('friends_count', 0),
+#             },
+#             'lang': status.get('lang', ''),
+#         }
+#         tweets.append(tweet)
+
+#     return JsonResponse({'tweets': tweets})
+
 def convert_dict_to_csv(data_dict):
     # Get the keys from the dictionary
     keys = list(data_dict.keys())
@@ -579,13 +511,6 @@ def convert_dict_to_csv(data_dict):
 
     # Return the temporary file path
     return temp_file_path
-
-
-import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from leadGeneration.models import FacebookPost
-from facebook_scraper import get_posts
 
 @csrf_exempt
 def scrape_facebook_page(request):
