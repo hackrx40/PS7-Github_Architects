@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'rest_framework',
+    'authentication',
+    'leadGeneration',
+    'webScraper'
 ]
 
 MIDDLEWARE = [
@@ -74,15 +78,15 @@ WSGI_APPLICATION = "CRM.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-     'default': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
-       'URL': 'postgresql://postgres:9aVLFxSOzxXSFCNSgiqN@containers-us-west-108.railway.app:7563/railway',
-       'NAME': 'railway',
-       'USER': 'postgres',
-       'PASSWORD': '9aVLFxSOzxXSFCNSgiqN',
-       'HOST': 'containers-us-west-108.railway.app',
-       'PORT': '7563',
-   }
+    'URL': 'postgresql://postgres:9aVLFxSOzxXSFCNSgiqN@containers-us-west-108.railway.app:7563/railway',
+    'NAME': 'railway',
+    'USER': 'postgres',
+    'PASSWORD': '9aVLFxSOzxXSFCNSgiqN',
+    'HOST': 'containers-us-west-108.railway.app',
+    'PORT': '7563',
+    }
 }
 
 
