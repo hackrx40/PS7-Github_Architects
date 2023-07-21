@@ -13,7 +13,6 @@ class Employee(models.Model):
     def __str__(self):
         return self.name
 
-
 class Team(models.Model):
     name = models.CharField(max_length=100)
     manager = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='managed_team')
@@ -22,7 +21,6 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
-
 class Manager(models.Model):
     name = models.CharField(max_length=100)
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True, related_name='manager')
@@ -30,7 +28,6 @@ class Manager(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Request(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
@@ -51,9 +48,6 @@ class InstagramProfile(models.Model):
 
     def __str__(self):
         return self.username
-    
-    
-
 
 class InstagramStats(models.Model):
     post_link = models.URLField()
@@ -61,8 +55,6 @@ class InstagramStats(models.Model):
 
     def __str__(self):
         return self.post_link
-    
-
 
 class InstagramPost(models.Model):
     hashtag = models.CharField(max_length=100)
