@@ -29,15 +29,9 @@ Visualize Data | CRM
                     action="{% url 'dataVisualization' %}">
                     {%csrf_token%}
                     <div class="form-group">
-                        <label for="selectService">Services</label>
-                        <select class="form-control form-control-lg" id="selectService" name="service">
-                            <option value="loan">Loans</option>
-                            <option value="insurance">Insurances</option>
-                            <option value="cards">Credit Cards</option>
-                            <option value="emi">EMI</option>
-                            <option value="investment">Investments</option>
-                            <option value="savings">Savings</option>
-                        </select>
+                        <label for="selectService">Keyword</label>
+                        <input type="text" class="form-control" id="selectService"
+                            placeholder="Eg. Loan, Mutual Funds etc." name="keyword">
                     </div>
                     <div class="form-group">
                         <label for="selectData">Social media</label>
@@ -47,11 +41,8 @@ Visualize Data | CRM
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="selectChart">Chart</label>
-                        <select class="form-control form-control-lg" id="selectChart" name="chart">
-                            <option value="bar">Bar Graph</option>
-                            <option value="pie">Pie Chart</option>
-                        </select>
+                        <label for="dateUntil">Date until</label>
+                        <input type="date" class="form-control" id="dateUntil" name="dateUntil">
                     </div>
                     <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
                     <a href="{% url 'dashboard' %}" class="btn btn-light">Cancel</a>
