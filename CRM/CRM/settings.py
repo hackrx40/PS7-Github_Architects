@@ -77,24 +77,24 @@ WSGI_APPLICATION = "CRM.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#     'URL': 'postgresql://postgres:9aVLFxSOzxXSFCNSgiqN@containers-us-west-108.railway.app:7563/railway',
-#     'NAME': 'railway',
-#     'USER': 'postgres',
-#     'PASSWORD': '9aVLFxSOzxXSFCNSgiqN',
-#     'HOST': 'containers-us-west-108.railway.app',
-#     'PORT': '7563',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Use SQLite instead of MySQL
-        'NAME': BASE_DIR / 'db.sqlite3',  # Path to the SQLite database file
+    'ENGINE': 'django.db.backends.postgresql',
+    'URL': 'postgresql://postgres:A4w3be3p9XqhCknCh8JA@containers-us-west-143.railway.app:5697/railway',
+    'NAME': 'railway',
+    'USER': 'postgres',
+    'PASSWORD': 'A4w3be3p9XqhCknCh8JA',
+    'HOST': 'containers-us-west-143.railway.app',
+    'PORT': '5697',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',  # Use SQLite instead of MySQL
+#         'NAME': BASE_DIR / 'db.sqlite3',  # Path to the SQLite database file
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

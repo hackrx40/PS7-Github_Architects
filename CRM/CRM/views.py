@@ -18,7 +18,7 @@ import requests
 import json
 from time import sleep
 from authentication.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
-from .serializers import InstagramProfileSerializer
+from CRM.serializers import InstagramProfileSerializer
 from leadGeneration.models import Post
 from django.shortcuts import render
 import pandas as pd
@@ -31,9 +31,10 @@ from authentication.models import Employee
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.db.models import Count, Q
-from django.conf import settings
 import os
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -715,11 +716,8 @@ from pathlib import Path
 def dashboard(request):
     if request.method=="POST":
             form_id = request.POST.get('form_id')
-            print(form_id)
-            model_folder = settings.BASE_DIR / 'model'
             if form_id == 'emp_req':
                 employee_id = request.POST.get('employee_id')
-                print(employee_id)
                 employee = Employee.objects.get(id=employee_id)
                 employee.is_approved = True
                 employee.save()
@@ -729,13 +727,10 @@ def dashboard(request):
                 account_name = request.POST.get('account_name')
                 form_id = request.POST.get('form_id')
                 selected_option = request.POST.get('status')
-                print(account_name,form_id,selected_option)
-                
-                
                 Lead.objects.filter(username=account_name).update(status=selected_option)
                 lead = Lead.objects.get(username=account_name)
                 lead.handled_by.add(form_id)
-                print("status changed")
+
                 Employeeob = Employee.objects.get(id=form_id)
             
                 leads = Lead.objects.all()
@@ -756,7 +751,7 @@ def dashboard(request):
             current_user = request.user
             employee = Employee.objects.get(email=current_user)
             user_type=employee.position
-           
+            
             if(user_type=="manager"):
             
                 api_url = 'http://127.0.0.1:8000/tweets/'
@@ -768,8 +763,8 @@ def dashboard(request):
                 #intent anaylsi
                 # base_dir_path = Path(settings.BASE_DIR)
                 # model_folder = base_dir_path / 'model'
-                intent=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/intent_classification.pkl","rb"))
-                intent_tfidf=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/intent_classification_tfidf.pkl","rb"))
+                intent=pkl.load(open(os.path.join(BASE_DIR, "model/intent_classification.pkl"),"rb"))
+                intent_tfidf=pkl.load(open(os.path.join(BASE_DIR,"model/intent_classification_tfidf.pkl"),"rb"))
                 def predict_intent(s):
                     s=[s]
                     d=intent.predict(intent_tfidf.transform(s))
@@ -791,8 +786,8 @@ def dashboard(request):
                 
                 
                 #sentiment analysis
-                sentiment=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/sentiment_clf.pkl","rb"))
-                sentiment_tfidf=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/sentiment_tfidf.pkl","rb"))
+                sentiment=pkl.load(open(os.path.join(BASE_DIR,"model/sentiment_clf.pkl"),"rb"))
+                sentiment_tfidf=pkl.load(open(os.path.join(BASE_DIR,"model/sentiment_tfidf.pkl"),"rb"))
                 def predict_sentiment(s):
                     s=[s]
                     d=sentiment.predict(sentiment_tfidf.transform(s))
@@ -808,8 +803,8 @@ def dashboard(request):
                 print(response_link)
 
                 #service anaylsis
-                service=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/service_model.pkl","rb"))
-                service_tfidf=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/service_model_tfidf.pkl","rb"))
+                service=pkl.load(open(os.path.join(BASE_DIR,"model/service_model.pkl"),"rb"))
+                service_tfidf=pkl.load(open(os.path.join(BASE_DIR,"model/service_model_tfidf.pkl"),"rb"))
                 def predict_service(s):
                     s=[s]
                     d=service.predict(service_tfidf.transform(s))
@@ -893,9 +888,7 @@ def generateDataForTwitter(request):
         #     querystring['until'] = until
 
         headers = {
-            # 'X-RapidAPI-Key': 'cc8d44e175mshcaabe692fb45fc0p104c66jsn0762ffe8c38b',
-            # 'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
-            'X-RapidAPI-Key': '7e7d825c09mshdf576f7bb75175ep1418b5jsnb9d3d7ad6763',
+            'X-RapidAPI-Key': 'd44b792600msh7b88ddb66d5d54fp1f9d61jsn5d1db7832743',
             'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
         }
 
