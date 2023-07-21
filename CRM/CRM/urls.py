@@ -28,4 +28,9 @@ urlpatterns = [
     path('instagram-posts/', views.get_instagram_posts, name='get_instagram_posts'),
     path('subreddit-data/', views.get_subreddit_data, name='get_subreddit_data'),
     path('tweets/', views.get_tweets, name='get_tweets'),
+    path('login/dashboard/', views.dashboard, name='dashboard'),
+    path('generateDataFromTwitter/', views.generateDataForTwitter, name='generateDataFromTwitter'),
+    path('generateDataFromInsta/', views.generateDataForInsta, name='generateDataFromInsta'),
+    path('generateLeads/', views.generateLeads, name='generateLeads'),
+    path('dataVisualization/', views.dataVisualization, name='dataVisualization'),
 ]
