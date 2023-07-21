@@ -15,10 +15,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from CRM import views
+from django.shortcuts import redirect
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('', views.index, name="index")
+    path("", include("authentication.urls")),
+    path('', lambda request: redirect('login/', permanent=False)),
+    path('instagram/profile/', views.get_instagram_profile, name='instagram-profile'),
+    path('instagram/stats/', views.get_instagram_stats, name='instagram-stats'),
+    path('instagram-posts/', views.get_instagram_posts, name='get_instagram_posts'),
+    path('subreddit-data/', views.get_subreddit_data, name='get_subreddit_data'),
+    path('tweets/', views.get_tweets, name='get_tweets'),
 ]
