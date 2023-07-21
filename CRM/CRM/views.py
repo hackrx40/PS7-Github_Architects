@@ -10,8 +10,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from django.views.decorators.http import require_GET
 import csv
-import json
-import os
 import pickle
 from django.http import JsonResponse
 import requests
@@ -33,7 +31,6 @@ from django.shortcuts import redirect
 from django.db.models import Count, Q
 import os
 from pathlib import Path
-import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from leadGeneration.models import FacebookPost
@@ -347,9 +344,7 @@ def get_tweets(request):
             querystring['until'] = until
 
         headers = {
-            # 'X-RapidAPI-Key': 'cc8d44e175mshcaabe692fb45fc0p104c66jsn0762ffe8c38b',
-            # 'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
-            'X-RapidAPI-Key': '7e7d825c09mshdf576f7bb75175ep1418b5jsnb9d3d7ad6763',
+            'X-RapidAPI-Key': 'd44b792600msh7b88ddb66d5d54fp1f9d61jsn5d1db7832743',
             'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
         }
 
