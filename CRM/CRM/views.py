@@ -10,35 +10,33 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from django.views.decorators.http import require_GET
 import csv
+import json
+import os
 import pickle
 from django.http import JsonResponse
 import requests
 import json
 from time import sleep
-from authentication.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
-from CRM.serializers import InstagramProfileSerializer
-from leadGeneration.models import Post
+from accounts.models import InstagramProfile,InstagramStats,InstagramPost,SubredditData
+from .serializers import InstagramProfileSerializer
+from leads.models import Post
 from django.shortcuts import render
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import warnings
-from leadGeneration.models import Lead
-from authentication.models import Employee
+from leads.models import Lead
+from accounts.models import Employee
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.db.models import Count, Q
+from django.conf import settings
 import os
 from pathlib import Path
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from leadGeneration.models import FacebookPost
-from facebook_scraper import get_posts
-from leadGeneration.models import Tweet
-from django.contrib.auth.decorators import login_required
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -72,7 +70,7 @@ def test(request):
             # Sleep 5 seconds between each loop to allow time for social media scraping
             sleep(5)
             finalResponse = requests.get(apiEndPointResponse + "scraper=" + scraper + "&responseId=" + responseId,
-                                        auth=(username, apiKey))
+                                         auth=(username, apiKey))
             result = finalResponse.json()
             if isinstance(result, list):
                 pending = False
@@ -90,6 +88,59 @@ def test(request):
     else:
         return JsonResponse({'error': response.text}, status=500)
 
+
+# @api_view(['POST'])
+# def get_instagram_profile(request):
+#     username = request.data.get('username', '')
+#     if not username:
+#         return JsonResponse({'error': 'Username parameter is missing.'}, status=400)
+#     conn = http.client.HTTPSConnection("scraper-api.smartproxy.com")
+#     payload = {
+#         "target": "instagram_graphql_profile",
+#         "url": f"https://www.instagram.com/{username}/",
+#         "locale": "en",
+#         "geo": "India"
+#     }
+#     headers = {
+#         'Accept': 'application/json',
+#         'Authorization': 'Basic UzAwMDAxMTExMjE6UCRXMTM5YThjMmQwNTM2NTg2MmI5ZTk0Y2IzZjM3NzAzMzJj',
+#         'Content-Type': 'application/json'
+#     }
+#     payload_str = json.dumps(payload)
+#     conn.request("POST", "/v1/scrape", payload_str, headers)
+#     res = conn.getresponse()
+#     data = res.read()
+#     response = json.loads(data.decode("utf-8"))
+#     # print(response)
+    
+#     content = response.get('data', {}).get('content', {})
+#     user = content.get('user', {})
+    
+#     # Extracting the required information
+#     username = user.get('username')
+#     is_verified = user.get('is_verified')
+#     followers_count = user.get('edge_followed_by', {}).get('count')
+#     following_count = user.get('edge_follow', {}).get('count')
+#     biography = user.get('biography')
+    
+#     posts = []
+#     edges = user.get('edge_felix_video_timeline', {}).get('edges', [])
+#     for edge in edges:
+#         node = edge.get('node', {})
+#         shortcode = node.get('shortcode')
+#         post_url = f'https://www.instagram.com/p/{shortcode}/'
+#         posts.append(post_url)
+    
+#     result = {
+#         'username': username,
+#         'verified': is_verified,
+#         'followers': followers_count,
+#         'following': following_count,
+#         'biography': biography,
+#         'post_urls': posts
+#     }
+
+#     return Response(result)
 @api_view(['POST'])
 def get_instagram_profile(request):
     username = request.data.get('username', '')
@@ -152,6 +203,40 @@ def get_instagram_profile(request):
         # Serialize the saved data
         serialized_data = InstagramProfileSerializer(profile).data
         return Response(serialized_data)
+
+
+# @csrf_exempt
+# @require_POST
+# def get_instagram_stats(request):
+#     payload = json.loads(request.body)
+#     post_links = payload.get('post_links', [])
+
+#     result = []
+#     for link in post_links:
+#         conn = http.client.HTTPSConnection("scraper-api.smartproxy.com")
+#         payload = json.dumps({
+#             "target": "instagram_post",
+#             "url": link,
+#             "locale": "en",
+#             "geo": "India"
+#         })
+#         headers = {
+#             'Accept': 'application/json',
+#             'Authorization': 'Basic UzAwMDAxMTExMjE6UCRXMTM5YThjMmQwNTM2NTg2MmI5ZTk0Y2IzZjM3NzAzMzJj',
+#             'Content-Type': 'application/json'
+#         }
+#         conn.request("POST", "/v1/scrape", payload, headers)
+#         res = conn.getresponse()
+#         data = res.read().decode("utf-8")
+#         response = json.loads(data)
+        
+#         # Extract the required information from the response
+#         comments = response['data']['content']['comments']
+#         extracted_info = [{'username': comment['username'], 'likes': comment['likes'], 'replies': comment['replies'], 'comment': comment['comment']} for comment in comments]
+        
+#         result.append({'post_link': link, 'comments': extracted_info})
+    
+#     return JsonResponse(result, safe=False)
 
 @api_view(['POST'])
 def get_instagram_stats(request):
@@ -329,6 +414,38 @@ def get_subreddit_data(request):
             })
 
     return Response(response_data)
+from leads.models import Tweet
+# @csrf_exempt
+# def delete_duplicates(request):
+#     if request.method=='GET':
+#         stored_tweets = Tweet.objects.all().values()
+#         df = pd.DataFrame.from_records(stored_tweets)
+#         intent=pkl.load(open("model/intent_classification.pkl","rb"))
+#         intent_tfidf=pkl.load(open("model/intent_classification_tfidf.pkl","rb"))
+#         def predict_intent(s):
+#             s=[s]
+#             d=intent.predict(intent_tfidf.transform(s))
+#             if d[0][0] == 1:
+#                 return "enquiry"
+#             elif d[0][1] == 1:
+#                 return "general talk"
+#             else:
+#                 return "complaint"
+#         df["intent"] = df["full_text"].apply(predict_intent)
+#         value_counts = df["intent"].value_counts()
+#         leads = []
+#         for index, row in df.iterrows():
+#             print(row['intent'])
+#             if row['intent'] == 'enquiry':
+#                 leads.append((row['screen_name'], row['location']))
+#         for lead in leads:
+#             username = lead[0]
+#             location = lead[1]
+#             handled_by = None  # Replace 'Your Employee Name' with the appropriate employee name or query
+#             if not Lead.objects.filter(username=username).exists():
+#                 lead_obj = Lead.objects.create(username=username, location=location, status='new', handled_by=handled_by)
+#                 lead_obj.save()
+#         return JsonResponse("Data saved succesfully", safe=False)
 
 @csrf_exempt
 def get_tweets(request):
@@ -345,7 +462,9 @@ def get_tweets(request):
             querystring['until'] = until
 
         headers = {
-            'X-RapidAPI-Key': 'd44b792600msh7b88ddb66d5d54fp1f9d61jsn5d1db7832743',
+            # 'X-RapidAPI-Key': 'cc8d44e175mshcaabe692fb45fc0p104c66jsn0762ffe8c38b',
+            # 'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
+            'X-RapidAPI-Key': '7e7d825c09mshdf576f7bb75175ep1418b5jsnb9d3d7ad6763',
             'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
         }
 
@@ -407,9 +526,11 @@ def get_tweets(request):
         value_counts = df["intent"].value_counts()
         leads = []
         for index, row in df.iterrows():
-            print(row['intent'])
-            if row['intent'] == 'enquiry':
-                leads.append((row['user']['screen_name'], row['user']['location']))
+            # ... (omitting the existing code for brevity)
+
+            # Get the predicted service using the ML model
+
+            leads.append((row['user']['screen_name'], row['user']['location']))
         
         #sentiment       
         sentiment=pkl.load(open("/anush/Projects/hackrx4.0/Service Classification/model/sentiment_clf.pkl","rb"))
@@ -443,51 +564,6 @@ def get_tweets(request):
         stored_tweets = Tweet.objects.all().values()
         return JsonResponse({'stored_tweets': list(stored_tweets)})
 
-# @csrf_exempt
-# @require_POST
-# def get_tweets(request):
-#     data = json.loads(request.body.decode('utf-8'))
-#     keyword = data.get('keyword', '')
-#     count = data.get('count', '20')  # Default count is set to 20 if not provided
-#     until = data.get('until')  # Optional parameter 'until' for the date filter
-#     print(keyword, count, until)
-    
-#     url = "https://twitter135.p.rapidapi.com/v1.1/SearchTweets/"
-
-#     querystring = {"q": keyword, "count": count}
-    
-#     if until:
-#         querystring['until'] = until
-
-#     headers = {
-#         # 'X-RapidAPI-Key': 'cc8d44e175mshcaabe692fb45fc0p104c66jsn0762ffe8c38b',
-#         # 'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
-#         'X-RapidAPI-Key': 'd44b792600msh7b88ddb66d5d54fp1f9d61jsn5d1db7832743',
-#         'X-RapidAPI-Host': 'twitter135.p.rapidapi.com'
-#     }
-
-#     response = requests.get(url, headers=headers, params=querystring)
-#     data = response.json()
-#     print(data)
-    
-#     tweets = []
-#     for status in data.get('statuses', []):
-#         tweet = {
-#             'created_at': status.get('created_at', ''),
-#             'full_text': status.get('full_text', ''),
-#             'user': {
-#                 'name': status['user'].get('name', ''),
-#                 'screen_name': status['user'].get('screen_name', ''),
-#                 'location': status['user'].get('location', ''),
-#                 'followers_count': status['user'].get('followers_count', 0),
-#                 'friends_count': status['user'].get('friends_count', 0),
-#             },
-#             'lang': status.get('lang', ''),
-#         }
-#         tweets.append(tweet)
-
-#     return JsonResponse({'tweets': tweets})
-
 def convert_dict_to_csv(data_dict):
     # Get the keys from the dictionary
     keys = list(data_dict.keys())
@@ -507,6 +583,13 @@ def convert_dict_to_csv(data_dict):
 
     # Return the temporary file path
     return temp_file_path
+
+
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from leads.models import FacebookPost
+from facebook_scraper import get_posts
 
 @csrf_exempt
 def scrape_facebook_page(request):
@@ -773,6 +856,7 @@ def dashboard(request):
                 "employee_req":req,
                 "top_performers": employee_lead_counts
                 }
+                
             else:
                 count_leads = Lead.objects.count()
                 leads = Lead.objects.all()
@@ -792,13 +876,13 @@ def generateLeads(request):
         "username":current_user,
         "user_type":employee.position}
     
-    return render(request, 'leadManagement.html',context=context)
+    return render(request, 'generateLeads.html',context=context)
 
 def generateDataForTwitter(request):
     if request.method == "POST":
         keyword = request.POST.get('keywords')
         print("keyword received -------", keyword)
-        count = 5  # Default count is set to 20 if not provided
+        count = 50  # Default count is set to 20 if not provided
         # until = request.POST.get('until') 
 
         url = "https://twitter135.p.rapidapi.com/v1.1/SearchTweets/"
@@ -853,6 +937,7 @@ def generateDataForTwitter(request):
 
         leads_generated = []
         df = pd.DataFrame(data['statuses'])
+        
         print(df.columns)
         if 'statuses' in data and data['statuses']:
             # If the 'statuses' field is not empty, proceed with creating the DataFrame
@@ -864,12 +949,12 @@ def generateDataForTwitter(request):
             context={
                 'message':message
             }
-            
-            return redirect('generateDataFromTwitter')
+            return render(request, 'generateLeads.html',context=context)
+        
         
         #intent anaylsis
-        intent=pkl.load(open(os.path.join(BASE_DIR,"model/intent_classification.pkl"),"rb"))
-        intent_tfidf=pkl.load(open(os.path.join(BASE_DIR,"model/intent_classification_tfidf.pkl"),"rb"))
+        intent=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/intent_classification.pkl","rb"))
+        intent_tfidf=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/intent_classification_tfidf.pkl","rb"))
         def predict_intent(s):
             s = [s]
             d = intent.predict(intent_tfidf.transform(s))
@@ -901,8 +986,8 @@ def generateDataForTwitter(request):
             if row['intent'] == 'enquiry':
                 leads.append((row['user']['screen_name'], row['user']['location']))
         
-        sentiment=pkl.load(open(os.path.join(BASE_DIR,"model/sentiment_clf.pkl"),"rb"))
-        sentiment_tfidf=pkl.load(open(os.path.join(BASE_DIR,"model/sentiment_tfidf.pkl"),"rb"))
+        sentiment=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/sentiment_clf.pkl","rb"))
+        sentiment_tfidf=pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/sentiment_tfidf.pkl","rb"))
         def predict_sentiment(s):
             s = [s]
             d = sentiment.predict(sentiment_tfidf.transform(s))
@@ -927,8 +1012,8 @@ def generateDataForTwitter(request):
             if row['sentiment'] == 'positive':
                 leads.append((row['user']['screen_name'], row['user']['location']))
 
-        service = pkl.load(open(os.path.join(BASE_DIR, "model/service_model.pkl"), "rb"))
-        service_tfidf = pkl.load(open(os.path.join(BASE_DIR,"model/service_model_tfidf.pkl"), "rb"))
+        service = pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/service_model.pkl", "rb"))
+        service_tfidf = pkl.load(open("/Users/harshdhariwal/Desktop/crm_main/hackrx4.0/Service Classification/model/service_model_tfidf.pkl", "rb"))
 
         def predict_service(s):
             s = [s]
@@ -952,7 +1037,7 @@ def generateDataForTwitter(request):
             card = service['card']
         else:
             card = 0
-        if "service" in service.index:
+        if "EMI" in service.index:
             emi = service['EMI']
         else:
             emi = 0
@@ -966,6 +1051,11 @@ def generateDataForTwitter(request):
             investment = 0
         service_link = "https://quickchart.io/chart?c={type:'bar',data:{labels:['Cards','EMI','loan','Investment'],datasets:[{label:'This month',data:[" + str(card) + "," + str(emi) + "," + str(loan) + "," + str(investment) + "],fill:false,borderColor:'blue'}]}}"
 
+        generated_leads = []
+        for index, row in df.iterrows():
+            print(row['intent'])
+            leads.append((row['user']['screen_name'], row['user']['location']))
+            generated_leads.append((row['user']['screen_name'], row['user']['location'],row['service']))         
         for lead in leads:
             username = lead[0]
             location = lead[1]
@@ -978,15 +1068,30 @@ def generateDataForTwitter(request):
         print(res_link)
         print(intent_link)
         print(service_link)
+        
         context = {
             "username": current_user,
             "user_type": employee.position,
             "response_link": res_link,
             "intent_link": intent_link,
-            "service_link": service_link
+            "service_link": service_link,
+            "positive": positive,
+            "negative": negative,
+            
+            "card":card,
+            "emi":emi,
+            "loan":loan,
+            "investment":investment,
+           
+            
+            "general talk": general,
+            "complaint": complaint,
+            "enquiry": enquiry,
+            
+            "leads": generated_leads,
         }
 
-        return render(request, "dashboard.html", context=context)
+        return render(request, "analysis.html", context=context)
 
     current_user = request.user
     employee = Employee.objects.get(email=current_user)
@@ -995,6 +1100,7 @@ def generateDataForTwitter(request):
         "user_type": employee.position,
     }
     return render(request, "generateDataForTwitter.html", context=context)
+
 
 def generateDataForInsta(request):
     if request.method=="POST":
@@ -1052,11 +1158,11 @@ def generateDataForInsta(request):
     employee = Employee.objects.get(email=current_user)
     context={
         "username":current_user,
-        "user_type":employee.position}
+        "user_type":employee.position
+        
+        }
     return render(request, "generateDataForInsta.html",context=context)
-
-from leadGeneration.models import Lead
-
+from leads.models import Lead
 def dataVisualization(request):
     if request.method=="POST":
         service=request.POST.get('service')
@@ -1084,6 +1190,22 @@ def dataVisualization(request):
         }
     return render(request, "dataVisualization.html",context=context)
 
+def crmConnect(request):
+    current_user = request.user
+    employee = Employee.objects.get(email=current_user)
+    context={
+        "username":current_user,
+        "user_type":employee.position}
+    return render(request, "connect.html",context=context)
+
+def crmMessage(request):
+    current_user = request.user
+    employee = Employee.objects.get(email=current_user)
+    context={
+        "username":current_user,
+        "user_type":employee.position}
+    return render(request, "message.html",context=context)
+
 def sales_analytics(request):
     current_user = request.user
     employee = Employee.objects.get(email=current_user)
@@ -1103,6 +1225,7 @@ def sales_analytics(request):
     }
     return render(request, "sales_anaylsis.html",context=context)
 
+
 def todo(request):
     return render(request, "todo.html")
 
@@ -1117,6 +1240,13 @@ def settings(request):
     return render(request, "settings.html",context=context)
 from django.contrib.auth.decorators import login_required
 
+from django.shortcuts import render
+
+def analysis(request):
+    print("came here")
+    return render(request, "analysis.html")
+
+
 @login_required
 def change_password_view(request):
     if request.method == 'POST':
@@ -1139,30 +1269,3 @@ def change_password_view(request):
         return redirect('settings')
 
     return render(request, 'settings.html')
-
-@login_required
-def change_password_view(request):
-    if request.method == 'POST':
-
-        current_password = request.POST.get('current_password')
-        new_password = request.POST.get('new_password')
-        confirm_new_password = request.POST.get('confirm_new_password')
-
-
-        if not request.user.check_password(current_password):
-            return render(request, 'change_password.html', {'error': 'Current password is incorrect.'})
-
-        if new_password != confirm_new_password:
-            return render(request, 'change_password.html', {'error': 'New password and confirm new password do not match.'})
-
-        request.user.set_password(new_password)
-        request.user.save()
-
-
-        return redirect('settings')
-
-    return render(request, 'settings.html')
-
-
-def anaylsis(requests):
-    return render(requests, "anaylsis.html")
