@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'authentication',
-    'leadGeneration',
-    'webScraper'
+    'leadGeneration'
 ]
 
 MIDDLEWARE = [
@@ -80,12 +79,12 @@ WSGI_APPLICATION = "CRM.wsgi.application"
 DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql',
-    'URL': 'postgresql://postgres:A4w3be3p9XqhCknCh8JA@containers-us-west-143.railway.app:5697/railway',
+    'URL': 'postgresql://postgres:IcD7frhMA5hjOd75nBvh@containers-us-west-75.railway.app:8071/railway',
     'NAME': 'railway',
     'USER': 'postgres',
-    'PASSWORD': 'A4w3be3p9XqhCknCh8JA',
-    'HOST': 'containers-us-west-143.railway.app',
-    'PORT': '5697',
+    'PASSWORD': 'IcD7frhMA5hjOd75nBvh',
+    'HOST': 'containers-us-west-75.railway.app',
+    'PORT': '8071',
     }
 }
 
