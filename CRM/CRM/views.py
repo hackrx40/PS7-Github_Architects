@@ -1105,3 +1105,22 @@ def dataVisualization(request):
         "user_type":employee.position
         }
     return render(request, "dataVisualization.html",context=context)
+
+def sales_analytics(request):
+    current_user = request.user
+    employee = Employee.objects.get(email=current_user)
+
+    #anaylsis
+    new=Lead.objects.filter(status="new").count()
+    engaged=Lead.objects.filter(status="engaged",handled_by=employee.id).count()
+    qualified=Lead.objects.filter(status="qualified",handled_by=employee.id).count()
+    converted=Lead.objects.filter(status="converted",handled_by=employee.id).count()
+    lost=Lead.objects.filter(status="lost",handled_by=employee.id).count()
+    status_chart="https://quickchart.io/chart?c={type:'bar',data:{labels:['new','engaged','qualified','converted','lost'],datasets:[{label:'This month',data:["+str(new)+","+str(engaged)+","+str(qualified)+","+str(converted)+","+str(lost)+"],fill:false,borderColor:'blue'}]}}"
+    
+    context={
+        "username":current_user,
+        "user_type":employee.position,
+        "stats":status_chart
+    }
+    return render(request, "sales_anaylsis.html",context=context)
