@@ -40,4 +40,5 @@ urlpatterns = [
     path('change_password/', views.change_password_view, name='change_password'),
     path('analysis/',views.analysis,name='analysis'),
     path('competitors/', views.competitorAnalysis, name="competitors"),
+    path('dataFilter/', views.dataFilter, name='dataFilter'),
 ]
