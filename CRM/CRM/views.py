@@ -955,31 +955,31 @@ def generateDataForTwitter(request):
             s = [s]
             d = intent.predict(intent_tfidf.transform(s))
             if d[0][0] == 1:
-                return "enquiry"
+                return "Hot Lead"
             elif d[0][1] == 1:
-                return "general talk"
+                return "Warm Lead"
             else:
-                return "complaint"
+                return "Cold Lead"
 
         df["intent"] = df["full_text"].apply(predict_intent)
         value_counts = df["intent"].value_counts()
-        if "general talk" in value_counts.index:
-            general = value_counts['general talk']
+        if "Warm Lead" in value_counts.index:
+            general = value_counts['Warm Lead']
         else:
             general = 0
-        if "complaint" in value_counts.index:
-            complaint = value_counts['complaint']
+        if "Cold Lead" in value_counts.index:
+            complaint = value_counts['Cold Lead']
         else:
             complaint = 0
-        if "enquiry" in value_counts.index:
-            enquiry = value_counts['enquiry']
+        if "Hot Lead" in value_counts.index:
+            enquiry = value_counts['Hot Lead']
         else:
             enquiry = 0
-        intent_link = "https://quickchart.io/chart?c={type:'doughnut',data:{labels:['General talk','Complaint','Enquiry'],datasets:[{data:[" + str(general) + "," + str(complaint) + "," + str(enquiry) + "]}]},options:{plugins:{doughnutlabel:{labels:[{text:'550',font:{size:20}},{text:'total'}]}}}}"
+        intent_link = "https://quickchart.io/chart?c={type:'doughnut',data:{labels:['Warm Lead','Cold Lead','Hot Lead'],datasets:[{data:[" + str(general) + "," + str(complaint) + "," + str(enquiry) + "]}]},options:{plugins:{doughnutlabel:{labels:[{text:'550',font:{size:20}},{text:'total'}]}}}}"
         leads = []
         for index, row in df.iterrows():
             print(row['intent'])
-            if row['intent'] == 'enquiry':
+            if row['intent'] == 'Hot Lead':
                 leads.append((row['user']['screen_name'], row['user']['location']))
         
         sentiment=pkl.load(open(os.path.join(BASE_DIR,"model/sentiment_clf.pkl"),"rb"))
@@ -1092,6 +1092,7 @@ def generateDataForTwitter(request):
         "user_type": employee.position,
     }
     return render(request, "generateDataForTwitter.html", context=context)
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from authentication.models import InstagramProfile
