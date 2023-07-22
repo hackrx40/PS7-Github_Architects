@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from CRM import views
 from django.shortcuts import redirect
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -41,4 +42,5 @@ urlpatterns = [
     path('analysis/',views.analysis,name='analysis'),
     path('competitors/', views.competitorAnalysis, name="competitors"),
     path('dataFilter/', views.dataFilter, name='dataFilter'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]
