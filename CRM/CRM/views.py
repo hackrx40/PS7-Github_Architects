@@ -1618,8 +1618,6 @@ def competitorAnalysis(request):
                 if txt != '':
                     df.loc[len(df)] = [txt]
         
-        print(len(df))
-        
         df["sentiment"]=df["Text"].apply(lambda x: sentiment(x))
         df["intent"]=df["Text"].apply(lambda x: intent(x))
         df["service"]=df["Text"].apply(lambda x: service(x))
@@ -1628,38 +1626,55 @@ def competitorAnalysis(request):
         df2=df[df["service"]=="loan"]
         df2["loan"] = df2["Text"].apply(lambda x: loans(x))
         
-        intentVals = list(df["intent"].value_counts())
+        intentVals = [str(i) for i in list(df["intent"].value_counts())]
+        intentVals = json.dumps(intentVals)
+        intentVals = intentVals.replace('"', "'")
         intentLabels = list(df["intent"].value_counts().index)
-        print(intentVals, intentLabels)
+        intentLabels = json.dumps(intentLabels)
+        intentLabels = intentLabels.replace('"', "'")
+
+        intentChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:"+ intentLabels +",datasets:[{data:"+ intentVals +"}]}}"
         
-        intentChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:['"+ intentLabels[0] +"','"+ intentLabels[1] +"','"+ intentLabels[2] +"'],datasets:[{data:["+ str(intentVals[0]) +", "+ str(intentVals[1]) +", "+ str(intentVals[2]) +"]}]}}"
-        
-        sentimentVals = list(df["sentiment"].value_counts())
+        sentimentVals = [str(i) for i in list(df["sentiment"].value_counts())]
+        sentimentVals = json.dumps(sentimentVals)
+        sentimentVals = sentimentVals.replace('"', "'")
         sentimentLabels = list(df["sentiment"].value_counts().index)
-        print(sentimentVals,sentimentLabels)
+        sentimentLabels = json.dumps(sentimentLabels)
+        sentimentLabels = sentimentLabels.replace('"', "'")
         
-        sentimentChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:['"+ sentimentLabels[0] +"','"+ sentimentLabels[1] +"],datasets:[{data:["+ str(sentimentVals[0]) +", "+ str(sentimentVals[1]) +"]}]}}"
+        sentimentChart ="https://quickchart.io/chart?c={type:'pie',data:{labels:"+ sentimentLabels +",datasets:[{data:"+ sentimentVals +"}]}}"
         
-        serviceVals = list(df["service"].value_counts())
+        serviceVals = [str(i) for i in list(df["service"].value_counts())]
+        serviceVals = json.dumps(serviceVals)
+        serviceVals = serviceVals.replace('"', "'")
         serviceLabels = list(df["service"].value_counts().index)
-        print(serviceVals, serviceLabels)
+        serviceLabels = json.dumps(serviceLabels)
+        serviceLabels = serviceLabels.replace('"', "'")
         
-        serviceChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:['"+ serviceLabels[0] +"','"+ serviceLabels[1] +"','"+ serviceLabels[2] +", "+ serviceLabels[3] +", "+ serviceLabels[4] +", "+ serviceLabels[5] +"'],datasets:[{data:["+ str(serviceVals[0]) +", "+ str(serviceVals[1]) +", "+ str(serviceVals[2]) +", "+ str(serviceVals[3]) +", "+ str(serviceVals[4]) +", "+ str(serviceVals[5]) +"]}]}}"
+        serviceChart ="https://quickchart.io/chart?c={type:'pie',data:{labels:"+ serviceLabels +",datasets:[{data:"+ serviceVals +"}]}}"
         
-        insuranceVals = list(df1["insurance"].value_counts())
+        insuranceVals = [str(i) for i in list(df1["insurance"].value_counts())]
+        insuranceVals = json.dumps(insuranceVals)
+        insuranceVals = insuranceVals.replace('"', "'")
         insuranceLabels = list(df1["insurance"].value_counts().index)
-        print(insuranceVals, insuranceLabels)
+        insuranceLabels = json.dumps(insuranceLabels)
+        insuranceLabels = insuranceLabels.replace('"', "'")
         
-        insuranceChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:['"+ insuranceLabels[0] +"','"+ insuranceLabels[1] +"','"+ insuranceLabels[2] +"','"+ insuranceLabels[3] +"','"+ insuranceLabels[4] +"'],datasets:[{data:["+ str(insuranceVals[0]) +", "+ str(insuranceVals[1]) +", "+ str(insuranceVals[2]) +", "+ str(insuranceVals[3]) +", "+ str(insuranceVals[4]) +"]}]}}"
+        insuranceChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:"+ insuranceLabels +",datasets:[{data:"+ insuranceVals +"}]}}"
         
-        loanVals = list(df2["loan"].value_counts())
+        loanVals = [str(i) for i in list(df2["loan"].value_counts())]
+        loanVals = json.dumps(loanVals)
+        loanVals = loanVals.replace('"', "'")
         loanLabels = list(df2["loan"].value_counts().index)
-        print(loanVals ,loanLabels)
-        loanChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:['"+ loanLabels[0] +"','"+ loanLabels[1] +"','"+ loanLabels[2] +"','"+ loanLabels[3] +"','"+ loanLabels[4] +"'],datasets:[{data:["+ str(loanVals[0]) +", "+ str(loanVals[1]) +", "+ str(loanVals[2]) +", "+ str(loanVals[3]) +", "+ str(loanVals[4]) +"]}]}}"
+        loanLabels = json.dumps(loanLabels)
+        loanLabels = loanLabels.replace('"', "'")
+        
+        loanChart = "https://quickchart.io/chart?c={type:'pie',data:{labels:"+ loanLabels +",datasets:[{data:"+ loanVals +"}]}}"
         
         context = {
             "username":current_user,
             "user_type":employee.position,
+            "competitor": competitor,
             "intentChart": intentChart,
             "sentimentChart": sentimentChart,
             "servicesChart": serviceChart,
