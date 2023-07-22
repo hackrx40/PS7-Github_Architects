@@ -43,4 +43,5 @@ urlpatterns = [
     path('competitors/', views.competitorAnalysis, name="competitors"),
     path('dataFilter/', views.dataFilter, name='dataFilter'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('admin/', admin.site.urls),
 ]
